@@ -1,4 +1,4 @@
-import 'package:carrot_market/const/data.dart';
+import 'package:carrot_market/repository/contents_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -9,18 +9,17 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List<Map<String, String>> datas = [];
   String currentLocation;
+  final ContentsRepository contentsRepository = ContentsRepository();
   Map<String, String> locationTypeToString = {
-    "banpo" : "반포동",
-    "bangbae" : "방배동",
-    "bomun" : "보문동",
+    "banpo": "반포동",
+    "bangbae": "방배동",
+    "bomun": "보문동",
   };
 
   @override
   void initState() {
     super.initState();
-    this.datas = data;
     currentLocation = "banpo";
   }
 
@@ -32,7 +31,11 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _bodyWidget() {
+  _loadContents() {
+    return contentsRepository.loadContentsFromLocation(currentLocation);
+  }
+
+  _makeDataList(List<Map<String, String>> datas){
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       itemBuilder: (BuildContext context, int index) {
@@ -119,9 +122,29 @@ class _HomeState extends State<Home> {
     );
   }
 
+  Widget _bodyWidget() {
+    return FutureBuilder(
+      future: _loadContents(),
+      builder: (context, snapshot) {
+        if(snapshot.connectionState != ConnectionState.done) {
+          return Center(child: CircularProgressIndicator(),);
+        }
+        if(snapshot.hasError) {
+          return Center(child: Text("데이터 오류 입니다!!"),);
+        }
+        if(snapshot.hasData)  {
+          return _makeDataList(snapshot.data);
+        }
+        return Center(child: Text("해당 지역의 데이터가 없습니다 !!"),);
+      }
+    );
+  }
+
   final oCcy = new NumberFormat("#,###", "ko_KR");
 
   String calcStringToWon(String priceString) {
+    if (priceString == "무료나눔")
+      return priceString;
     return "${oCcy.format(int.parse(priceString))}원";
   }
 
@@ -159,7 +182,7 @@ class _HomeState extends State<Home> {
           },
           child: Row(
             children: [
-              Text(locationTypeToString[currentLocation] ?? "null"),
+              Text(locationTypeToString[currentLocation]),
               Icon(Icons.arrow_drop_down),
             ],
           ),
