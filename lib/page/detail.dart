@@ -1,4 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carrot_market/components/manor_temperature_widget.dart';
 import 'package:flutter/material.dart';
 
 class DetailContentView extends StatefulWidget {
@@ -62,6 +63,47 @@ class _DetailContentViewState extends State<DetailContentView> {
   }
 
   Widget _bodyWidget() {
+    return Column(
+      children: [
+        _makeSliderImage(),
+        _sellerSimpleInfo(),
+      ],
+    );
+  }
+
+  Widget _sellerSimpleInfo() {
+    return Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Row(
+        children: [
+          // ClipRRect(
+          //   borderRadius: BorderRadius.circular(50),
+          //   child: Container(
+          //     width: 50,
+          //     height: 50,
+          //     child: Image.asset('assets/images/user.png'),
+          //   ),
+          // ),
+          CircleAvatar(
+            radius: 25,
+            backgroundImage: Image.asset('assets/images/user.png').image,
+            // child: Image.asset('assets/images/user.png'),
+          ),
+          SizedBox(width: 10,),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("BJSKY", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
+              Text("서울시 반포동"),
+            ],
+          ),
+          Expanded(child: ManorTemperature(manorTemp: 37.5,)),
+        ],
+      ),
+    );
+  }
+
+  Widget _makeSliderImage() {
     return Container(
       height: size.width * 0.8,
       child: Stack(
