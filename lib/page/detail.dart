@@ -23,7 +23,7 @@ class _DetailContentViewState extends State<DetailContentView>
   AnimationController _animationController;
   Animation _colorTween;
   bool isMyFavoriteContent;
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  final scaffoldKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
   void initState() {
