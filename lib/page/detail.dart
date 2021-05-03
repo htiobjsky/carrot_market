@@ -1,6 +1,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:carrot_market/components/manor_temperature_widget.dart';
+import 'package:carrot_market/utils/data_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class DetailContentView extends StatefulWidget {
   final Map<String, String> data;
@@ -11,10 +13,34 @@ class DetailContentView extends StatefulWidget {
   _DetailContentViewState createState() => _DetailContentViewState();
 }
 
-class _DetailContentViewState extends State<DetailContentView> {
+class _DetailContentViewState extends State<DetailContentView>
+    with SingleTickerProviderStateMixin {
   Size size;
   List<String> imgList;
   int _current;
+  double scrollPositionToAlpah = 0;
+  ScrollController _controller = ScrollController();
+  AnimationController _animationController;
+  Animation _colorTween;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _controller.addListener(() {
+      setState(() {
+        if (_controller.offset > 255)
+          scrollPositionToAlpah = 255;
+        else
+          scrollPositionToAlpah = _controller.offset;
+
+        _animationController.value = scrollPositionToAlpah / 255;
+      });
+    });
+    _animationController = AnimationController(vsync: this);
+    _colorTween = ColorTween(begin: Colors.white, end: Colors.black)
+        .animate(_animationController);
+  }
 
   @override
   void didChangeDependencies() {
@@ -41,23 +67,29 @@ class _DetailContentViewState extends State<DetailContentView> {
     );
   }
 
+  Widget _makeIcon(IconData icon) {
+    return AnimatedBuilder(
+        animation: _colorTween,
+        builder: (context, child) {
+          return Icon(icon, color: _colorTween.value);
+        });
+  }
+
   Widget _appbarWidget() {
     return AppBar(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white.withAlpha(scrollPositionToAlpah.toInt()),
       elevation: 0,
       leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
+          icon: _makeIcon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           }),
       actions: [
         IconButton(
-            icon: Icon(Icons.share, color: Colors.white), onPressed: () {}),
+            icon: _makeIcon(Icons.share),
+            onPressed: () {}),
         IconButton(
-            icon: Icon(Icons.more_vert, color: Colors.white), onPressed: () {}),
+            icon: _makeIcon(Icons.more_vert), onPressed: () {}),
       ],
     );
   }
@@ -136,7 +168,7 @@ class _DetailContentViewState extends State<DetailContentView> {
   }
 
   Widget _bodyWidget() {
-    return CustomScrollView(slivers: [
+    return CustomScrollView(controller: _controller, slivers: [
       SliverList(
         delegate: SliverChildListDelegate(
           [
@@ -157,17 +189,26 @@ class _DetailContentViewState extends State<DetailContentView> {
             mainAxisSpacing: 5,
             crossAxisSpacing: 5,
           ),
-          delegate: SliverChildListDelegate(List.generate(20, (index){
+          delegate: SliverChildListDelegate(List.generate(20, (index) {
             return Container(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ClipRRect(
-                      child: Container(color: Colors.grey, height: 120,),
-                      borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      color: Colors.grey,
+                      height: 120,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  Text("상품 제목", style: TextStyle(fontSize: 14),),
-                  Text("금액", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
+                  Text(
+                    "상품 제목",
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  Text(
+                    "금액",
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
             );
@@ -276,10 +317,65 @@ class _DetailContentViewState extends State<DetailContentView> {
   }
 
   Widget _bottomBarWidget() {
-    return Container(
-      height: 55,
-      width: size.width,
-      color: Colors.red,
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        height: 55,
+        width: size.width,
+        child: Row(
+          children: [
+            GestureDetector(
+                onTap: () {
+                  print("관심상품 이벤트 발생");
+                },
+                child: SvgPicture.asset(
+                  "assets/svg/heart_off.svg",
+                  width: 20,
+                  height: 20,
+                )),
+            Container(
+              margin: const EdgeInsets.only(left: 15, right: 10),
+              width: 1,
+              height: 40,
+              color: Colors.grey.withOpacity(0.3),
+            ),
+            Column(
+              children: [
+                Text(
+                  DataUtils.calcStringToWon(widget.data["price"]),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  "가격 제안 불가",
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ],
+            ),
+            Expanded(
+                child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                      color: Color(0xfff08f4f),
+                      borderRadius: BorderRadius.circular(
+                        5,
+                      )),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+                  child: Text(
+                    "채팅으로 거래하기",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ))
+          ],
+        ),
+      ),
     );
   }
 }

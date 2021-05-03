@@ -1,8 +1,8 @@
 import 'package:carrot_market/page/detail.dart';
 import 'package:carrot_market/repository/contents_repository.dart';
+import 'package:carrot_market/utils/data_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -92,7 +92,7 @@ class _HomeState extends State<Home> {
                             height: 5.0,
                           ),
                           Text(
-                            calcStringToWon(datas[index]["price"]),
+                            DataUtils.calcStringToWon(datas[index]["price"]),
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Expanded(
@@ -152,13 +152,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  final oCcy = new NumberFormat("#,###", "ko_KR");
 
-  String calcStringToWon(String priceString) {
-    if (priceString == "무료나눔")
-      return priceString;
-    return "${oCcy.format(int.parse(priceString))}원";
-  }
 
   AppBar _appbarWidget() {
     return AppBar(
