@@ -22,6 +22,8 @@ class _DetailContentViewState extends State<DetailContentView>
   ScrollController _controller = ScrollController();
   AnimationController _animationController;
   Animation _colorTween;
+  bool isMyFavoriteContent;
+  final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -40,6 +42,7 @@ class _DetailContentViewState extends State<DetailContentView>
     _animationController = AnimationController(vsync: this);
     _colorTween = ColorTween(begin: Colors.white, end: Colors.black)
         .animate(_animationController);
+    isMyFavoriteContent = false;
   }
 
   @override
@@ -60,6 +63,7 @@ class _DetailContentViewState extends State<DetailContentView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
       extendBodyBehindAppBar: true,
       appBar: _appbarWidget(),
       body: _bodyWidget(),
@@ -326,12 +330,19 @@ class _DetailContentViewState extends State<DetailContentView>
           children: [
             GestureDetector(
                 onTap: () {
-                  print("관심상품 이벤트 발생");
+                  setState(() {
+                    isMyFavoriteContent = !isMyFavoriteContent;
+                  });
+                  scaffoldKey.currentState.showSnackBar(
+                    SnackBar(content: Text(isMyFavoriteContent ? "관심목록에 추가되었습니다" :  "관심목록에서 제거되었습니다"),
+                      duration: Duration(milliseconds: 1000),)
+                  );
                 },
                 child: SvgPicture.asset(
-                  "assets/svg/heart_off.svg",
-                  width: 20,
-                  height: 20,
+                  isMyFavoriteContent ? "assets/svg/heart_on.svg" :  "assets/svg/heart_off.svg" ,
+                  width: 25,
+                  height: 25,
+                  color: Color(0xfff08f4f),
                 )),
             Container(
               margin: const EdgeInsets.only(left: 15, right: 10),
