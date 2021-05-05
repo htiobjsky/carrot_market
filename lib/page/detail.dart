@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:carrot_market/components/manor_temperature_widget.dart';
+import 'package:carrot_market/repository/contents_repository.dart';
 import 'package:carrot_market/utils/data_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -15,6 +16,7 @@ class DetailContentView extends StatefulWidget {
 
 class _DetailContentViewState extends State<DetailContentView>
     with SingleTickerProviderStateMixin {
+  ContentsRepository contentsRepository;
   Size size;
   List<String> imgList;
   int _current;
@@ -23,7 +25,7 @@ class _DetailContentViewState extends State<DetailContentView>
   AnimationController _animationController;
   Animation _colorTween;
   bool isMyFavoriteContent;
-  final scaffoldKey = GlobalKey<ScaffoldMessengerState>();
+  //final scaffoldKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
   void initState() {
@@ -43,6 +45,15 @@ class _DetailContentViewState extends State<DetailContentView>
     _colorTween = ColorTween(begin: Colors.white, end: Colors.black)
         .animate(_animationController);
     isMyFavoriteContent = false;
+    contentsRepository = ContentsRepository();
+    _loadMyFavoriteContentState();
+  }
+  _loadMyFavoriteContentState () async {
+    bool tf = await contentsRepository.isMyFavoriteContents(widget.data["cid"]);
+    setState(() {
+      isMyFavoriteContent = tf;
+    });
+
   }
 
   @override
@@ -63,7 +74,7 @@ class _DetailContentViewState extends State<DetailContentView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: scaffoldKey,
+      //key: scaffoldKey,
       extendBodyBehindAppBar: true,
       appBar: _appbarWidget(),
       body: _bodyWidget(),
@@ -330,10 +341,11 @@ class _DetailContentViewState extends State<DetailContentView>
           children: [
             GestureDetector(
                 onTap: () {
+                  contentsRepository.addMyFavoriteContent(widget.data);
                   setState(() {
                     isMyFavoriteContent = !isMyFavoriteContent;
                   });
-                  scaffoldKey.currentState.showSnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(isMyFavoriteContent ? "관심목록에 추가되었습니다" :  "관심목록에서 제거되었습니다"),
                       duration: Duration(milliseconds: 1000),)
                   );

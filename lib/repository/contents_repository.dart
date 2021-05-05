@@ -1,4 +1,9 @@
-class ContentsRepository {
+import 'dart:convert';
+
+import 'package:carrot_market/repository/local_storage_repository.dart';
+
+class ContentsRepository extends LocalStorageRepository {
+  final String My_FAVORITE_STORE_KEY = "MY_FAVORITE_STORE_KEY";
   Map<String, dynamic> data = {
     "banpo": [
       {
@@ -171,5 +176,20 @@ class ContentsRepository {
     //API 통신 location값을 보내주면서
     await Future.delayed(Duration(milliseconds: 1000));
     return data[location];
+  }
+
+  addMyFavoriteContent(Map<String, String> content) {
+    this.storeValue(My_FAVORITE_STORE_KEY, jsonEncode(content));
+  }
+
+  isMyFavoriteContents(String cid) async{
+    String jsonString = await this.getStoredValue(My_FAVORITE_STORE_KEY);
+    if(jsonString!=null) {
+      Map<String, dynamic> json = jsonDecode(jsonString);
+      return cid == json["cid"];
+      print(json);
+    }else {
+      return null;
+    }
   }
 }
